@@ -1,5 +1,18 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QMessageBox>
+#include <QNetworkReply>
+
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QString>
+
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonArray>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -45,4 +58,3 @@ MainWindow::~MainWindow()
 void MainWindow::on_process_given_sentence_button_clicked()
 {
 }
-
