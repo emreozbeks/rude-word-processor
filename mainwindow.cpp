@@ -14,6 +14,11 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 
+#include <QFuture>
+#include <QtConcurrent/QtConcurrent>
+
+#include "sentenceprocessor.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
       , ui(new Ui::MainWindow)
@@ -40,6 +45,14 @@ MainWindow::MainWindow(QWidget *parent)
     label_and_input_sentence_box_horizontal_layout->addWidget(input_sentence_box);
 
     connect(process_given_sentence_button, SIGNAL(clicked()), this, SLOT(on_process_given_sentence_button_clicked()));
+    
+    QMessageBox::information(this,
+                             "Rude Word Processor",
+                             "This program does not work properly when numbers and punctuation marks are exist, yet.\n"
+                                "So if you are going to provide a sentence, make sure you do not provide any characters except for letters.\n"
+                                "----------------------------------------------------------------------\n"
+                                "Muhammed Emin ÖMÜR - Software Engineering\n"
+								"Emre ÖZBEK - Software Engineering");
 }
 
 MainWindow::~MainWindow()
@@ -57,4 +70,19 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_process_given_sentence_button_clicked()
 {
+	if (input_sentence_box->text().length() == 0) {
+        return;
+    } else if (input_sentence_box->text().length() > 100) {
+        QMessageBox::warning(this, "Long Input", "Sorry, length of your input cannot be more than 100 characters");
+        return;
+    }
+
+    QString input_sentence = input_sentence_box->text();
+
+    QFuture<QString> result_sentence_future = QtConcurrent::run([&]() {
+        SentenceProcessor p;
+        p.initialize(input_sentence);
+        return p.get_result();
+    });
+    result_sentence_label->setText("Result: " + result_sentence_future.result());
 }
