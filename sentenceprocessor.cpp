@@ -56,7 +56,28 @@ void SentenceProcessor::split_input_sentence()
 
 void SentenceProcessor::query_word_list()
 {
-   //
+    for (auto& a : word_list) {
+        QNetworkRequest request(QUrl(OXFORD_DICTIONARY_API_URL + a));
+        request.setRawHeader("app_id", OXFORD_DICTIONARY_API_APP_ID);
+        request.setRawHeader("app_key", OXFORD_DICTIONARY_API_APP_KEY);
+
+        QEventLoop loop;
+        QNetworkReply *reply = manager->get(request);
+        connect(manager, SIGNAL(finished(QNetworkReply *)), &loop, SLOT(quit()));
+        loop.exec();
+        QJsonObject json_result = QJsonDocument::fromJson(reply->readAll().data()).object();
+
+        // true means word is definitely slang word
+        // false means word is either not exist or word is not slang word
+        bool is_slang = json_result["results"].toArray()[0].toObject()["lexicalEntries"].toArray()[0]
+                            .toObject()["entries"].toArray()[0].toObject()["senses"].toArray()[0]
+                            .toObject()["registers"].toArray()[0].toObject()["id"].toString() == "vulgar_slang";
+        if (!is_slang) {
+            word_result_map[a] = QueryResult::SWEAR_WORD_NEGATIVE;
+        } else {
+            word_result_map[a] = QueryResult::SWEAR_WORD_POSITIVE;
+        }
+    }
 }
 
 void SentenceProcessor::form_final_sentence()
